@@ -1,0 +1,89 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17.4
+        env:
+          POSTGRES_DB: shop_sphere
+          POSTGRES_USER: odd
+          POSTGRES_PASSWORD: MyPassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U odd -d shop_sphere"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Python dependencies
+      working-directory: ./backend
+      run: |
+        pip install pipenv
+        pipenv install --dev
+        pipenv run python manage.py migrate
+
+    - name: Run Django tests
+      working-directory: ./backend
+      run: |
+        pipenv run pytest
+
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Build frontend
+      working-directory: ./frontend
+      run: npm run build
+
+    - name: Docker Compose Build
+      run: docker-compose -f docker-compose.yml build
+
+    # Optional: Push to DockerHub/GitHub Container Registry
+    # - name: Log in to DockerHub
+    #   run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    # - name: Push images
+    #   run: docker-compose -f docker-compose.yml push
+
+    # Optional: Deployment to server with SSH
+    # - name: Deploy to server
+    #   uses: appleboy/ssh-action@master
+    #   with:
+    #     host: ${{ secrets.HOST }}
+    #     username: ${{ secrets.USER }}
+    #     key: ${{ secrets.SSH_KEY }}
+    #     script: |
+    #       cd /path/to/app
+    #       git pull origin main
+    #       docker-compose down
+    #       docker-compose up -d --build
+
