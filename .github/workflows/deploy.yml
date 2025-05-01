@@ -50,6 +50,9 @@ jobs:
     #     pip install pipenv
     #     pipenv install
     #     pipenv run python manage.py migrate
+    - name: Install pkg_resources workaround
+      run: pip install setuptools
+
 
     - name: Install Python dependencies
       working-directory: ./backend
