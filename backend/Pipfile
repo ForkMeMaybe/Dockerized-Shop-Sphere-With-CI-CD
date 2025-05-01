@@ -26,6 +26,7 @@ dj-database-url = "*"
 django-otp = "*"
 pyotp = "*"
 razorpay = "*"
+python-dotenv = "*"
 
 [dev-packages]
 pytest = "*"
