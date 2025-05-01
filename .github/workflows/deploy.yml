@@ -48,7 +48,7 @@ jobs:
       working-directory: ./backend
       run: |
         pip install pipenv
-        pipenv install --dev
+        pipenv install
         pipenv run python manage.py migrate
 
     - name: Run Django tests
