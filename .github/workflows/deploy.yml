@@ -44,12 +44,21 @@ jobs:
       with:
         node-version: '20'
 
+    # - name: Install Python dependencies
+    #   working-directory: ./backend
+    #   run: |
+    #     pip install pipenv
+    #     pipenv install
+    #     pipenv run python manage.py migrate
+
     - name: Install Python dependencies
       working-directory: ./backend
       run: |
         pip install pipenv
-        pipenv install
+        pipenv install  # Install dependencies
+        pipenv run pip show python-dotenv  # Check if python-dotenv is installed
         pipenv run python manage.py migrate
+
 
     - name: Run Django tests
       working-directory: ./backend
